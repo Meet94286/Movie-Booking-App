@@ -1,4 +1,5 @@
 const http = require("http");
+const db_url = require("./config/db.config");
 
 port = 3000;
 
@@ -20,3 +21,17 @@ const app = http.createServer((req,res)=>{
 
 app.listen(port);
 module.exports = {app,routeMap};
+const db = require("./models/index");
+db.mongoose
+  .connect(db_url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log("Connected to the database!");
+    
+  })
+  .catch(err => {
+    console.log("Cannot connect to the database!", err);
+    process.exit();
+  });
