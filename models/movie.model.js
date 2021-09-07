@@ -14,7 +14,7 @@ let movieSchema = new mongoose.Schema({
         type : Boolean,
         required : true
     },
-    release: {
+    released: {
         type : Boolean,
         required : true
     },
