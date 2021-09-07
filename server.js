@@ -1,26 +1,55 @@
-const http = require("http");
+// const http = require("http");
 const db_url = require("./config/db.config");
 
-port = 3000;
+ port = 3003;
 
-const routeMap = {
-    "/movies" : "All Movies Data in JSON format from Mongo DB",
-    "/genres" : "All Genres Data in JSON format from Mongo DB",
-    "/artists" : "All Artists Data in JSON format from Mongo DB"
+// const routeMap = {
+//     "/movies" : "All Movies Data in JSON format from Mongo DB",
+//     "/genres" : "All Genres Data in JSON format from Mongo DB",
+//     "/artists" : "All Artists Data in JSON format from Mongo DB"
+// }
+
+// const app = http.createServer((req,res)=>{
+//     if(routeMap[req.url]){
+//         res.writeHead(200,{"Content-type": "text/html"});
+//         res.end(routeMap[req.url]);
+//     }else{
+//         res.writeHead(404,{"Content-type": "plain/text"});
+//         res.end()
+//     }
+// })
+
+const express = require("express");
+const cors = require("cors");
+const app = express();
+const movieRouter = require("./routes/movie.routes");
+const genreRouter = require("./routes/genre.routes");
+const artistRouter = require("./routes/artist.routes");
+
+
+const corsOptions = {
+  origin : "http://localhost:3000/",
+  status : 200,
+  methods : "GET , PUT"
 }
 
-const app = http.createServer((req,res)=>{
-    if(routeMap[req.url]){
-        res.writeHead(200,{"Content-type": "text/html"});
-        res.end(routeMap[req.url]);
-    }else{
-        res.writeHead(404,{"Content-type": "plain/text"});
-        res.end()
-    }
-})
+app.use(cors(corsOptions));
 
-app.listen(port);
-module.exports = {app,routeMap};
+app.get("/", (req, res) => {
+  res.json({ message: "Welcome to Upgrad Movie booking application development." });
+});
+
+app.use("/api/movies",movieRouter);
+app.use("/api/genres",genreRouter);
+app.use("/api/artists",artistRouter);
+
+
+
+
+app.listen(port,console.log(port));
+module.exports = app;
+
+
 const db = require("./models/index");
 db.mongoose
   .connect(db_url, {
