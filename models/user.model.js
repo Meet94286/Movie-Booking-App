@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 let userSchema = new mongoose.Schema({
     userid : {
         type : Number,
-        required : true,
+       required : true,
         unique :true
     },
     email : {
@@ -13,11 +13,11 @@ let userSchema = new mongoose.Schema({
     },
     first_name : {
         type : String,
-        required : true
+       // required : true
     },
     last_name : {
         type : String,
-        required : true
+       required : true
     },
     username : {
         type : String,
@@ -25,7 +25,7 @@ let userSchema = new mongoose.Schema({
     },
     contact : {
         type : String,
-        required : true
+          required : true
     },
     password : {
         type : String,
@@ -38,10 +38,10 @@ let userSchema = new mongoose.Schema({
         type : Boolean,
     },
     uuid : {type: String,
-        required : true
+       // required : true
     },
     accesstoken : {type : String,
-        required:true,
+       // required:true,
         unique:true
     },
     coupons : Array,
