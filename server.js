@@ -1,7 +1,7 @@
 // const http = require("http");
 const db_url = require("./config/db.config");
 
- port = 3003;
+ port = 3001;
 
 // const routeMap = {
 //     "/movies" : "All Movies Data in JSON format from Mongo DB",
@@ -20,20 +20,27 @@ const db_url = require("./config/db.config");
 // })
 
 const express = require("express");
+ body_Parser = require("body-parser");
 const cors = require("cors");
 const app = express();
 const movieRouter = require("./routes/movie.routes");
 const genreRouter = require("./routes/genre.routes");
 const artistRouter = require("./routes/artist.routes");
+const userRouter = require("./routes/user.routes");
 
 
 const corsOptions = {
-  origin : "http://localhost:3000/",
+  origin : "http://localhost:8085/",
   status : 200,
   methods : "GET , PUT"
 }
 
 app.use(cors(corsOptions));
+app.use(body_Parser.json());
+app.use(body_Parser.urlencoded({extended : true}))
+
+
+
 
 app.get("/", (req, res) => {
   res.json({ message: "Welcome to Upgrad Movie booking application development." });
@@ -42,6 +49,7 @@ app.get("/", (req, res) => {
 app.use("/api/movies",movieRouter);
 app.use("/api/genres",genreRouter);
 app.use("/api/artists",artistRouter);
+app.use("/api/auth",userRouter)
 
 
 
@@ -51,6 +59,7 @@ module.exports = app;
 
 
 const db = require("./models/index");
+
 db.mongoose
   .connect(db_url, {
     useNewUrlParser: true,
