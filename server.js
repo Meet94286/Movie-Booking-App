@@ -1,7 +1,7 @@
 // const http = require("http");
 const db_url = require("./config/db.config");
 
- port = 3001;
+ port = 3002;
 
 // const routeMap = {
 //     "/movies" : "All Movies Data in JSON format from Mongo DB",
