@@ -2,18 +2,18 @@ const mongoose = require("mongoose");
 
 let userSchema = new mongoose.Schema({
     userid : {
-        type : Number,
-       required : true,
+        type : String,
+      // required : true,
         unique :true
     },
     email : {
         type : String,
-        required : true,
+       required : true,
         dropDups : true
     },
     first_name : {
         type : String,
-       // required : true
+        required : true
     },
     last_name : {
         type : String,
@@ -25,23 +25,26 @@ let userSchema = new mongoose.Schema({
     },
     contact : {
         type : String,
-          required : true
+        required : true
     },
     password : {
         type : String,
         required : true
     },
-    role : {type : String,
+    role : {
+        type : String,
         default : "user",
     },
     isLoggedIn : {
         type : Boolean,
     },
-    uuid : {type: String,
-       // required : true
+    uuid : {
+        type: String,
+        required : true
     },
-    accesstoken : {type : String,
-       // required:true,
+    accesstoken : {
+        type : String,
+        required:true,
         unique:true
     },
     coupons : Array,
