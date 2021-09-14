@@ -1,7 +1,7 @@
 const Users = require("../models/user.model");
 const TokenGenerator = require("uuid-token-generator");
 const {v4 : uuidv4} = require('uuid');
-//const { atob } = require("b2a");
+const { atob } = require("b2a");
 const tokenGenerator = new TokenGenerator();
 
 const signUp = (req,res)=>{
@@ -68,19 +68,10 @@ const signUp = (req,res)=>{
         .catch(err=>console.log(err));
         })
       }
-
-
-
-
-
-
-
-
-
-
-
+      
+      
   const logout = (req,res)=>{
-    const uuid = req.body.uuid;
+  const uuid = req.body.uuid;
   const update = { isLoggedIn: false, accesstoken: "", uuid: "" };
   Users.findOneAndUpdate({ uuid: uuid }, update, { useFindAndModify: false })
     .then(data => {
@@ -92,6 +83,45 @@ const signUp = (req,res)=>{
     });
 }
 
-module.exports = {signUp,login,logout};
+const bookShow = (req,res)=>{
+  const accesstoken = req.body.accesstoken;
+  if (!accesstoken) throw new Error("user not logged in");
+    const uuid = req.body.uuid;
+    const bookingRequest = req.body.bookingRequest;
+    Users.findOneAndUpdate(
+      { uuid: uuid },
+      { $push: { bookingRequests: bookingRequest } }
+    )
+      .then(data => {
+        if (!data) throw new Error("unable to book show");
+        res.status(200).send(bookingRequest);
+      })
+
+
+      .catch(err => {
+        res.status(500).send(err.message || "unable to book show");
+      });
+  
+}
+
+const getCouponCode = (req,res)=>{
+  const accesstoken = req.body.accesstoken;
+  if (!accesstoken) {
+    return res.status(401).send("user not logged in");
+  }
+  
+    Users.find({ accesstoken: accesstoken }).then(data=>{
+
+    if (data[0].coupens) {
+      res.send(data[0].coupens);
+    } else {
+      res.send([]);
+    }
+  } )
+}
+
+
+
+module.exports = {signUp,login,logout,bookShow,getCouponCode};
     
 
