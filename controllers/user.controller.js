@@ -1,6 +1,8 @@
-const { users } = require("../models");
-const { db } = require("../models/user.model");
 const Users = require("../models/user.model");
+const TokenGenerator = require("uuid-token-generator");
+const {v4 : uuidv4} = require('uuid');
+//const { atob } = require("b2a");
+const tokenGenerator = new TokenGenerator();
 
 const signUp = (req,res)=>{
   
@@ -8,7 +10,7 @@ const signUp = (req,res)=>{
   const password = req.body.password;
 
     if(!username && !password){
-        res.status(400).send({ message: "Please provide email and password to continue." });
+        res.status(400).send({ message: "Please provide username and password to continue." });
       return;
     }
     
@@ -32,17 +34,18 @@ const signUp = (req,res)=>{
                 username : req.body.username,
                 contact : req.body.contact,
                 role : req.body.role ? req.body.role  :"user",
-                isLoggedIn : true,
+                isLoggedIn : false,
                 first_name : req.body.first_name,
                 last_name : req.body.last_name,
-                userid : req.body.userid,
+                uuid : uuidv4(),
+                accesstoken : tokenGenerator.generate(),
                 
               });
 
               newUser.save((err, user) => {
                 if (err)
                   return res.status("400").send(err.message || "some error occurred");
-                res.status(200).send("Uswr added at database");
+                res.status(200).send(user);
               });
             } else {
               res.status(400).send("User Already Exists.");
@@ -51,67 +54,44 @@ const signUp = (req,res)=>{
           )}
 
 
-const login = (req,res)=>{
- 
-   
+ const login = (req,res)=>{
+      if(!req.body.username || !req.body.password){
+        res.status(400).send("Please provide username and password");
+        return;
+      }
+      Users.findOne({username : req.body.username,password:req.body.password},(err,user)=>{
+        if(err || user === null){
+          res.status(401).send({message : "Email or password not correct"});
+        }
+        Users.findOneAndUpdate({accesstoken:user.accesstoken},{isLoggedIn:true},{new:true})
+        .then(res.status(200).send("Logged in successfully"))
+        .catch(err=>console.log(err));
+        })
+      }
 
-   if(!req.body.username && !req.body.password){
-    res.status(400).send({ message: "Please provide username and password to continue." });
-    return;
-   }
-   
-   Users.findOne({username : req.body.username,password:req.body.password},(err,user)=>{
-     if(err || user === null){
-       res.status(401).send({message : "Username or Password is incorrect"});
 
-     }
-     else{
-       user.isLoggedIn = true;
 
-       Users.findOneAndUpdate({username : req.body.username,password:req.body.password},user,{new:true})
-       .then(data=>{
-         if(!data){
-           res.status(404).send({message : "Some error occured please try again try later"});
-         }
-         else
-           res.send({
-            "first_name" : data.first_name,
-            "last_name" : data.last_name,
-            "email" : data.email,
-            "isLoggedIn": true,
-            "role" : data.role,
-            "contact" : data.contact
-           }).status(200);
-         
-       }).catch(err=>{
-         res.status(5000).send({message : "You are already logged in"});
 
-       })
-     }
-   })
 
-}
 
-const logout = (req,res)=>{
-     if(!req.body.id){
-      res.status(400).send({ message: "Please provide user Id." });
-      return;
-     }
-     const id = req.body.id;
 
-     Users.findOneAndUpdate({userid : id},{isLoggedIn:false},{new:true})
-     .then(data=>{
-       if(!data){
-           res.status(404).send({message : "Some error occured"});
-       }
-       else{
-         res.send("Logged out successfully").status(200);
-       }
-     }).catch(err=>{
-       res.send("Error updating").status(500);
-     })
+
+
+
+
+  const logout = (req,res)=>{
+    const uuid = req.body.uuid;
+  const update = { isLoggedIn: false, accesstoken: "", uuid: "" };
+  Users.findOneAndUpdate({ uuid: uuid }, update, { useFindAndModify: false })
+    .then(data => {
+      if (data === null) throw new error("unable to logout");
+      res.send({ message: "Logged Out successfully." });
+    })
+    .catch(err => {
+      res.status(500).send(err.message);
+    });
 }
 
 module.exports = {signUp,login,logout};
     
-    
+
