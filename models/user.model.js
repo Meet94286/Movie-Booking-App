@@ -3,25 +3,25 @@ const mongoose = require("mongoose");
 let userSchema = new mongoose.Schema({
     userid : {
         type : String,
-      // required : true,
+    //  required : true,
         unique :true
     },
     email : {
         type : String,
-       required : true,
+      required : true,
         dropDups : true
     },
     first_name : {
         type : String,
-        required : true
+       required : true
     },
     last_name : {
         type : String,
-       required : true
+      required : true
     },
     username : {
         type : String,
-        required : true
+       //required : true
     },
     contact : {
         type : String,
@@ -40,17 +40,21 @@ let userSchema = new mongoose.Schema({
     },
     uuid : {
         type: String,
-        required : true
+        //required : true
     },
     accesstoken : {
         type : String,
-        required:true,
+      //  required:true,
         unique:true
     },
-    coupons : Array,
-    bookingRequests : Array
+    coupens : [],
+    bookingRequests : []
     
-})
+});
+userSchema.pre("save", function (next) {
+    this.username = this.first_name + this.last_name;
+    next();
+  });
 
 const Users = mongoose.model("users",userSchema);
 
