@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 let artistSchema = new mongoose.Schema({
     artistid : {
-        type : Number,
+        type : String,
         required : true,
         unique :true
     },
@@ -11,7 +11,7 @@ let artistSchema = new mongoose.Schema({
         required : true
     },
     last_name : {
-        type : Number,
+        type : String,
         required : true
     },
     wiki_url : {
