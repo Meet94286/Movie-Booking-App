@@ -1,76 +1,74 @@
 const Users = require("../models/user.model");
 const TokenGenerator = require("uuid-token-generator");
-const {v4 : uuidv4} = require('uuid');
+const {uuid} = require("uuidv4");
 const { atob } = require("b2a");
 const tokenGenerator = new TokenGenerator();
 
-const signUp = (req,res)=>{
-  
-  const username = req.body.username;
-  const password = req.body.password;
 
-    if(!username && !password){
-        res.status(400).send({ message: "Please provide username and password to continue." });
-      return;
-    }
+async function signUp(req, res) {
+  const {
+    email_address:email ,
+    first_name,
+    last_name,
+    mobile_number:contact,
+    password,
+    } = req.body;
+  const newUser = new Users({
+    uuid: uuid(),
+    email,
+    first_name,
+    last_name,
+    contact,
+    password,
+    accesstoken: tokenGenerator.generate(),
     
-   
-
-    if(username == "user" && password == "user@123"){
-        res.status(400).send({ message: "Sorry, You cannot register as ADMIN." });
-        return;
+  });
+  Users.findOne({ email: email }, (err, user) => {
+    if (err || user === null) {
+      newUser.save((err, user) => {
+        if (err)
+          return res.status("400").send(err.message || "some error occurred");
+        res.status(200).send("OK");
+      });
+    } else {
+      res.status(400).send("User Already Exists.");
     }
-
-      Users.findOne({username : username,password:password},(err,user)=>{
-
-        if(err || user === null){ // if user not found from username and password then add new user
-
-    
-
-            const newUser = new Users({
-             
-                email : req.body.email,
-                password: req.body.password,
-                username : req.body.username,
-                contact : req.body.contact,
-                role : req.body.role ? req.body.role  :"user",
-                isLoggedIn : false,
-                first_name : req.body.first_name,
-                last_name : req.body.last_name,
-                uuid : uuidv4(),
-                accesstoken : tokenGenerator.generate(),
-                
-              });
-
-              newUser.save((err, user) => {
-                if (err)
-                  return res.status("400").send(err.message || "some error occurred");
-                res.status(200).send(user);
-              });
-            } else {
-              res.status(400).send("User Already Exists.");
-            }
-          }
-          )}
+  });
+}
 
 
- const login = (req,res)=>{
-      if(!req.body.username || !req.body.password){
-        res.status(400).send("Please provide username and password");
-        return;
-      }
-      Users.findOne({username : req.body.username,password:req.body.password},(err,user)=>{
-        if(err || user === null){
-          res.status(401).send({message : "Email or password not correct"});
-        }
-        Users.findOneAndUpdate({accesstoken:user.accesstoken},{isLoggedIn:true},{new:true})
-        .then(res.status(200).send("Logged in successfully"))
-        .catch(err=>console.log(err));
-        })
-      }
-      
-      
-  const logout = (req,res)=>{
+  async function login(req, res) {
+  //decrypt username and password by seperating the basic word
+  try {
+    const encodedAuth = req.headers["authorization"];
+    const userNameAndPassword = atob(encodedAuth.split(" ")[1]);
+    const username = userNameAndPassword.split(":")[0];
+    const password = userNameAndPassword.split(":")[1];
+    const user = await Users.findOne({ username: username });
+    if (user.password === password) {
+      user.isLoggedIn = true,user.uuid = uuid(),
+    user.accessToken = tokenGenerator.generate();
+   Users.findOneAndUpdate({username:username},user,{useFindAndModify:false})
+   .then(updateUser => {
+    if (updateUser === null) throw new Error("Unable to update user");
+    res.status(200).send({
+      id: user.uuid,
+      "access-token": user.accesstoken,
+    });
+  })
+  .catch(err => {
+    res.status(500).send(err.message || "login failed");
+  });
+} else {
+res.status(401).send("username and password dont match");
+}
+} catch (err) {
+    res.status(500).send(err.message || "user not found");
+  }
+}
+
+
+async function logout(req, res) {
   const uuid = req.body.uuid;
   const update = { isLoggedIn: false, accesstoken: "", uuid: "" };
   Users.findOneAndUpdate({ uuid: uuid }, update, { useFindAndModify: false })
@@ -83,9 +81,27 @@ const signUp = (req,res)=>{
     });
 }
 
-const bookShow = (req,res)=>{
-  const accesstoken = req.body.accesstoken;
-  if (!accesstoken) throw new Error("user not logged in");
+async function getCouponCode(req, res) {
+  const accesstoken = atob(req.header["authorization"].split(" ")[1]);
+  if (!accesstoken) {
+    return res.status(401).send("user not logged in");
+  }
+  try {
+    const users = await Users.find({ accesstoken: accesstoken });
+    if (users[0].coupens) {
+      res.send(users[0].coupens);
+    } else {
+      res.send([]);
+    }
+  } catch (err) {
+    return res.status(500).send(err.message || "user not found");
+  }
+}
+
+async function bookShow(req, res) {
+  try {
+    const accessToken = atob(req.header["authorization"].split(" ")[1]);
+    if (!accessToken) throw new Error("user not logged in");
     const uuid = req.body.uuid;
     const bookingRequest = req.body.bookingRequest;
     Users.findOneAndUpdate(
@@ -101,25 +117,10 @@ const bookShow = (req,res)=>{
       .catch(err => {
         res.status(500).send(err.message || "unable to book show");
       });
-  
-}
-
-const getCouponCode = (req,res)=>{
-  const accesstoken = req.body.accesstoken;
-  if (!accesstoken) {
-    return res.status(401).send("user not logged in");
+  } catch (err) {
+    res.status(500).send(err.message || "unable to book show");
   }
-  
-    Users.find({ accesstoken: accesstoken }).then(data=>{
-
-    if (data[0].coupens) {
-      res.send(data[0].coupens);
-    } else {
-      res.send([]);
-    }
-  } )
 }
-
 
 
 module.exports = {signUp,login,logout,bookShow,getCouponCode};
