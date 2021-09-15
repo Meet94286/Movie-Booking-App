@@ -73,9 +73,8 @@ class Home extends Component {
         xhr.addEventListener("readystatechange", function () {
           
             if (this.readyState === 4) {
-                debugger;
                 that.setState({
-                    upcomingMovies: JSON.parse(this.responseText).movies
+                    upcomingMovies: JSON.parse(this.responseText)
                 });
             }
         });
@@ -90,14 +89,14 @@ class Home extends Component {
         xhrReleased.addEventListener("readystatechange", function () {
             if (this.readyState === 4) {
                 that.setState({
-                    releasedMovies: JSON.parse(this.responseText).movies
+                    releasedMovies: JSON.parse(this.responseText)
                 });
             }
         });
 
         xhrReleased.open("GET", this.props.baseUrl + "movies?status=RELEASED");
         xhrReleased.setRequestHeader("Cache-Control", "no-cache");
-        xhrReleased.send(dataReleased);
+        xhrReleased.send(dataReleased)
 
         // Get filters
         let dataGenres = null;
@@ -105,14 +104,14 @@ class Home extends Component {
         xhrGenres.addEventListener("readystatechange", function () {
             if (this.readyState === 4) {
                 that.setState({
-                    genresList: JSON.parse(this.responseText).genres
+                    genresList: JSON.parse(this.responseText)
                 });
             }
         });
 
         xhrGenres.open("GET", this.props.baseUrl + "genres");
         xhrGenres.setRequestHeader("Cache-Control", "no-cache");
-        xhrGenres.send(dataGenres);
+        xhrGenres.send(dataGenres)
 
         // Get artists
         let dataArtists = null;
@@ -120,14 +119,14 @@ class Home extends Component {
         xhrArtists.addEventListener("readystatechange", function () {
             if (this.readyState === 4) {
                 that.setState({
-                    artistsList: JSON.parse(this.responseText).artists
+                    artistsList: JSON.parse(this.responseText)
                 });
             }
         });
 
         xhrArtists.open("GET", this.props.baseUrl + "artists");
         xhrArtists.setRequestHeader("Cache-Control", "no-cache");
-        xhrArtists.send(dataArtists);
+        xhrArtists.send(dataArtists)
     }
 
     movieNameChangeHandler = event => {
@@ -179,7 +178,7 @@ class Home extends Component {
         xhrFilter.addEventListener("readystatechange", function () {
             if (this.readyState === 4) {
                 that.setState({
-                    releasedMovies: JSON.parse(this.responseText).movies
+                    releasedMovies: JSON.parse(this.responseText)
                 });
             }
         });
